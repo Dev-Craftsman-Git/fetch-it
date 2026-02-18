@@ -1,8 +1,14 @@
-FROM python:3.11-slim
+FROM python:3.11
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=off \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (ffmpeg and others)
 RUN apt-get update && apt-get install -y \
     curl \
     ffmpeg \
@@ -10,13 +16,15 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
-# Install Playwright browsers and dependencies
-RUN playwright install-deps
-RUN playwright install chromium
+# Install Playwright browsers with system dependencies
+RUN playwright install --with-deps chromium
 
 COPY . .
 
-# Hugging Face Spaces defaults to port 7860
+# Create downloads directory and set permissions for any user
+RUN mkdir -p /app/downloads && chmod 777 /app/downloads
+
+# Command to run the application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
