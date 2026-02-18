@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+playwright
+aiohttp
+
+python-multipart
+requests
+yt-dlp
